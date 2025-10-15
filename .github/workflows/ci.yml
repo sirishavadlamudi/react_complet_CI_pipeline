@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  DOCKER_IMAGE: sirishavadlamudi/react-app
+  DOCKER_IMAGE: sirisha849/react-app
 
 jobs:
   build:
