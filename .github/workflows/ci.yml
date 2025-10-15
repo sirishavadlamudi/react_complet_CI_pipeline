@@ -16,7 +16,7 @@ jobs:
     steps:
       # 1️⃣ Checkout Code
       - name: Checkout code
-      - uses: actions/checkout@v4
+        uses: actions/checkout@v4
 
       # 2️⃣ Setup Node
       - name: Setup Node.js
@@ -30,9 +30,9 @@ jobs:
 
       # 4️⃣ Lint Code
       - name: Run ESLint
-        run: npm run lint || echo "Linting warnings ignored"
+        run: npm run lint || echo "Lint warnings ignored"
 
-      # 5️⃣ Run Tests
+      # 5️⃣ Run Unit Tests
       - name: Run Unit Tests
         run: npm test -- --watchAll=false || echo "Tests failed but not blocking"
 
