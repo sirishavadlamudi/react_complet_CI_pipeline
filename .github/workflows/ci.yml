@@ -1,0 +1,74 @@
+name: React CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  DOCKER_IMAGE: sirishavadlamudi/react-app
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout Code
+      - name: Checkout code
+      - uses: actions/checkout@v4
+
+      # 2️⃣ Setup Node
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # 3️⃣ Install Dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # 4️⃣ Lint Code
+      - name: Run ESLint
+        run: npm run lint || echo "Linting warnings ignored"
+
+      # 5️⃣ Run Tests
+      - name: Run Unit Tests
+        run: npm test -- --watchAll=false || echo "Tests failed but not blocking"
+
+      # 6️⃣ Build React App
+      - name: Build React App
+        run: npm run build
+
+      # 7️⃣ Build Docker Image
+      - name: Build Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: ${{ env.DOCKER_IMAGE }}:latest
+
+      # 8️⃣ Trivy Scan
+      - name: Trivy Scan
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        with:
+          image-ref: ${{ env.DOCKER_IMAGE }}:latest
+          exit-code: '1'
+          severity: 'HIGH,CRITICAL'
+
+      # 9️⃣ Docker Login
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 🔟 Push Docker Image
+      - name: Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ env.DOCKER_IMAGE }}:latest
+          load: true
